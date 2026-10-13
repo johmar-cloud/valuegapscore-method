@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Interactive methodology for the Flow Value Investing value gap score.">
+<title>Value Gap Methodology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9E9DD; --surface:#F2F2EA; --fg:#1D2431; --muted:#555B66; --line:rgba(29,36,49,.22);
+  --gold:#5A6B8E; --gold-ink:#2B3650; --gold-soft:rgba(90,107,142,.16); --slate-soft:rgba(29,36,49,.10);
+  --serif:'Inter',system-ui,'Segoe UI',Arial,sans-serif;
+  --sans:'Inter',system-ui,'Segoe UI',Arial,sans-serif;
+  --mono:'IBM Plex Mono',Consolas,'Courier New',monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1D2431; --surface:#262E3D; --fg:#E9E9DD; --muted:#A9ABA6; --line:rgba(233,233,221,.22);
+    --gold:#8E9BB8; --gold-ink:#B9C3DA; --gold-soft:rgba(142,155,184,.22); --slate-soft:rgba(233,233,221,.10); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1D2431; --surface:#262E3D; --fg:#E9E9DD; --muted:#A9ABA6; --line:rgba(233,233,221,.22);
+  --gold:#8E9BB8; --gold-ink:#B9C3DA; --gold-soft:rgba(142,155,184,.22); --slate-soft:rgba(233,233,221,.10); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:28px 56px}
+h1{font-family:var(--serif);font-weight:600;letter-spacing:-.02em;font-size:clamp(2rem,6vw,2.9rem);line-height:1.1;margin:0 0 12px;text-wrap:balance}
+h2{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;font-size:1.6rem;line-height:1.15;margin:0 0 8px;text-wrap:balance}
+h3{font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px;color:var(--muted)}
+p{margin:0 0 12px;max-width:68ch}
+.lede{font-size:1.1rem;max-width:62ch}
+nav{display:flex;flex-wrap:wrap;gap:6px 14px;margin:20px 0 4px;padding-block:10px;border-block:.5px solid var(--line);font-size:.85rem}
+nav a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--gold)}
+section{margin-top:44px;scroll-margin-top:12px}
+.sec-head{border-left:3px solid var(--gold);padding-left:12px;margin-bottom:16px}
+.sec-head p{color:var(--muted);margin:0}
+.card{background:var(--surface);border:.5px solid var(--line);border-radius:8px;padding:16px;min-width:0}
+.card+.card{margin-top:12px}
+.formula{font-family:var(--mono);font-size:.9rem;background:var(--gold-soft);border-left:3px solid var(--gold);padding:10px 12px;overflow-x:auto;margin:0 0 14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+label{display:block;font-size:.85rem;color:var(--muted)}
+.ctl{display:flex;flex-direction:column;gap:2px;margin-bottom:12px}
+.ctl .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl output{font-family:var(--mono);font-size:.95rem;color:var(--fg);font-weight:500}
+input[type=range]{width:100%;accent-color:var(--gold);margin:4px 0}
+input[type=number],input[type=search],select{font:inherit;font-family:var(--mono);font-size:.95rem;width:100%;padding:6px 8px;color:var(--fg);background:var(--bg);border:.5px solid var(--line);border-radius:4px;min-width:0}
+input[type=search]{font-family:var(--sans)}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th{background:var(--fg);color:var(--bg);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:8px;white-space:nowrap}
+td{padding:7px 8px;border-bottom:.5px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td input{padding:4px 6px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+button{font:inherit;font-size:.85rem;font-weight:500;padding:6px 12px;border:.5px solid var(--fg);background:transparent;color:var(--fg);border-radius:4px;cursor:pointer}
+button:hover,button.on{background:var(--fg);color:var(--bg)}
+.big{font-family:var(--mono);font-size:2.2rem;font-weight:500;line-height:1.1}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--gold);background:var(--gold-soft)}
+.tag.off{border-color:var(--line);background:var(--slate-soft);color:var(--muted)}
+.read{margin:10px 0 0;color:var(--fg)}
+.note{font-size:.85rem;color:var(--muted);margin:10px 0 0}
+/* gap bar */
+.gbar{position:relative;height:30px;margin:14px 0 22px;background:var(--surface);border:.5px solid var(--line)}
+.gbar .z{position:absolute;top:0;bottom:0;background:var(--gold-soft)}
+.gbar .mid{position:absolute;top:0;bottom:0;left:50%;border-left:.5px dashed var(--muted)}
+.gbar .mk{position:absolute;top:-5px;bottom:-5px;width:4px;margin-left:-2px;background:var(--fg);transition:left .15s}
+.gbar .lb{position:absolute;top:34px;font-size:.7rem;font-family:var(--mono);color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+/* score scale */
+.scale{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin:10px 0 6px}
+.scale div{text-align:center;font-family:var(--mono);font-size:.78rem;padding:8px 0;border:.5px solid var(--line);color:var(--muted)}
+.scale div.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:500}
+.scale div.neg{background:var(--slate-soft)}
+.scale div.pos{background:var(--gold-soft)}
+.scale div.on{background:var(--fg)}
+.cap{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+.lines{width:100%}
+.lines td:first-child{width:46%}
+.lines tr.tot td{border-top:1.5px solid var(--gold);font-weight:600}
+svg text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.gl dt{font-weight:600;margin-top:12px}
+.gl dd{margin:2px 0 0;max-width:68ch}
+.gl dt span{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--gold-ink);margin-left:8px;letter-spacing:.06em;text-transform:uppercase}
+footer{margin-top:48px;padding-top:14px;border-top:.5px solid var(--line);font-size:.8rem;color:var(--muted)}
+@media (max-width:480px){.big{font-size:1.8rem}.scale div{font-size:.7rem}}
+</style>
+
+<div class="wrap">
+<h1>How the value gap score works</h1>
+<p class="lede">The score compares a stock's multiples with its peer group, then adjusts for operating trend and price momentum. Every number below can be moved. Worked examples come from the 12 October 2026 weekly scan.</p>
+<nav aria-label="Sections">
+  <a href="#gap">1 Value gap</a><a href="#score">2 Score builder</a><a href="#names">3 Five names</a><a href="#z">4 Z-score</a><a href="#premium">5 Justified premium</a><a href="#glossary">6 Glossary</a>
+</nav>
+
+<!-- 1 GAP -->
+<section id="gap">
+  <div class="sec-head"><h2>1 The value gap</h2><p>How far a stock's multiples sit from its peers'.</p></div>
+  <div class="formula">VGap = 100 × ln( peer median multiple ÷ own multiple )</div>
+  <p>The gap is worked out for three multiples: P/E, EV/EBITDA and P/FCF. The median of the three is the VGap. EV/EBIT is shown for reference only. A positive gap means the stock is cheaper than its peers. A negative gap means it is dearer.</p>
+  <div class="card">
+    <div class="btns"><button id="g-reset">Reset to NXP, 12 Oct</button></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Multiple</th><th class="n">Own</th><th class="n">Peer median</th><th class="n">Gap</th></tr></thead>
+      <tbody>
+        <tr><td>P/E</td><td><input type="number" step="0.1" id="o-pe"></td><td><input type="number" step="0.1" id="p-pe"></td><td class="n" id="g-pe"></td></tr>
+        <tr><td>EV/EBITDA</td><td><input type="number" step="0.1" id="o-ev"></td><td><input type="number" step="0.1" id="p-ev"></td><td class="n" id="g-ev"></td></tr>
+        <tr><td>P/FCF</td><td><input type="number" step="0.1" id="o-fcf"></td><td><input type="number" step="0.1" id="p-fcf"></td><td class="n" id="g-fcf"></td></tr>
+      </tbody>
+    </table></div>
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:baseline;margin-top:16px">
+      <div><h3>VGap (median of legs)</h3><div class="big" id="g-med"></div></div>
+      <div><h3>Gate ±22.3</h3><span class="tag" id="g-gate"></span></div>
+      <div><h3>Spread</h3><span class="tag" id="g-spread"></span></div>
+    </div>
+    <div class="gbar" id="g-bar"></div>
+    <p class="read" id="g-read"></p>
+    <div class="ctl" style="max-width:300px"><label for="disp">Peer dispersion (coefficient of variation), optional</label><input type="number" step="0.01" id="disp" placeholder="e.g. 0.45"></div>
+    <p class="note" id="disp-read"></p>
+    <p class="note">Preset values are rounded FMP LTM multiples from 12 October. The report's rebuilt NXP gap is +72.7, and rounding here gives about +73.</p>
+  </div>
+  <div class="grid" style="margin-top:12px">
+    <div class="card"><h3>The gate</h3><p>±22.3 is a 20% discount or premium, since 100 × ln(1.25) = 22.3. Inside the gate there is no base signal. Reading the scale: +30 means the peer median is about 35% above own. −30 means it is about 26% below. +69.3 means the stock trades at half the peer median.</p></div>
+    <div class="card"><h3>Integrity filters</h3><p><b>Spread</b> is the largest leg gap minus the smallest. Above 80 the multiples disagree about the company. <b>Peer dispersion</b> above 0.6 means the peer group is incoherent, so a discount to it is weak evidence. With only two usable legs, the median is their average and one broken leg poisons it.</p></div>
+  </div>
+</section>
+
+<!-- 2 SCORE -->
+<section id="score">
+  <div class="sec-head"><h2>2 The VG_Score builder</h2><p>Base signal plus an operating modifier plus a momentum modifier. Range −2 to +2 in half steps.</p></div>
+  <div class="btns" id="presets"></div>
+  <div class="grid">
+    <div class="card">
+      <div class="ctl"><div class="row"><label for="s-gap">Value gap (VGap)</label><output id="o-s-gap"></output></div><input type="range" id="s-gap" min="-100" max="100" step="0.1"></div>
+      <div class="ctl"><div class="row"><label for="s-mgn">EBITDA margin change, blended (pp)</label><output id="o-s-mgn"></output></div><input type="range" id="s-mgn" min="-10" max="10" step="0.1"></div>
+      <div class="ctl"><div class="row"><label for="s-rev">Revenue growth, blended (%)</label><output id="o-s-rev"></output></div><input type="range" id="s-rev" min="-10" max="30" step="0.1"></div>
+      <div class="ctl"><div class="row"><label for="s-mom">1-month return (%)</label><output id="o-s-mom"></output></div><input type="range" id="s-mom" min="-20" max="20" step="0.1"></div>
+      <p class="note">Blended means 60% last twelve months and 40% latest quarter.</p>
+    </div>
+    <div class="card">
+      <table class="lines"><tbody id="s-lines"></tbody></table>
+      <div class="scale" id="s-scale"></div>
+      <div class="cap"><span>−2 short candidate</span><span>0</span><span>+2 long candidate</span></div>
+      <p class="read" id="s-read"></p>
+      <p class="note" id="s-note"></p>
+    </div>
+  </div>
+  <div class="grid" style="margin-top:12px">
+    <div class="card"><h3>Base</h3><p>+1 when VGap is above +22.3, −1 when below −22.3, otherwise 0.</p></div>
+    <div class="card"><h3>Operating modifier</h3><p>Margin band: +1 above +1pp, −1 below −1pp, 0 between. Revenue band: +1 above 10% growth, 0 from 0% to 10%, −1 below 0%. The sign of the mean of the two bands, times 0.5.</p></div>
+    <div class="card"><h3>Momentum modifier</h3><p>0 when the 1-month return is within ±3%. Otherwise ±0.5 with the sign of the move.</p></div>
+  </div>
+  <p class="note">Modifiers carry the sign of the trend, not of the trade. For a short, a positive operating score offsets the negative base. Scale reading: ±2 ready, ±1.5 and ±1 mixed signals, ±0.5 not there yet, 0 no gap.</p>
+</section>
+
+<!-- 3 NAMES -->
+<section id="names">
+  <div class="sec-head"><h2>3 Five names from the 12 October scan</h2><p>Scan score, then the score after rebuilding the gap and testing it.</p></div>
+  <div class="card"><div class="tbl"><table>
+    <thead><tr><th>Name</th><th class="n">Scan gap</th><th class="n">Rebuilt</th><th class="n">Scan score</th><th class="n">Revised</th><th>Stress case</th><th></th></tr></thead>
+    <tbody id="names-body"></tbody>
+  </table></div>
+  <p class="note">The builder reproduces the scan score. Revised scores include judgement: PEP drops from 1.0 to 0.5 after a guidance cut and a food-peer gap of +13.1 that sits inside the gate. EW moves from −0.5 to 0 because its growth-adjusted premium is only −10 to −26.</p></div>
+</section>
+
+<!-- 4 Z -->
+<section id="z">
+  <div class="sec-head"><h2>4 Z-score</h2><p>How unusual a stock's move is against its group.</p></div>
+  <div class="formula">Z = ( stock 3M return − group typical 3M return ) ÷ group standard deviation</div>
+  <div class="grid">
+    <div class="card">
+      <div class="ctl"><div class="row"><label for="z-s">Stock 3-month return (%)</label><output id="o-z-s"></output></div><input type="range" id="z-s" min="-40" max="40" step="0.5" value="-12"></div>
+      <div class="ctl"><div class="row"><label for="z-g">Group typical 3-month return (%)</label><output id="o-z-g"></output></div><input type="range" id="z-g" min="-20" max="20" step="0.5" value="4"></div>
+      <div class="ctl"><div class="row"><label for="z-d">Group standard deviation (pp)</label><output id="o-z-d"></output></div><input type="range" id="z-d" min="2" max="30" step="0.5" value="12"></div>
+    </div>
+    <div class="card">
+      <h3>Z</h3><div class="big" id="z-val"></div>
+      <svg viewBox="0 0 320 70" width="100%" role="img" aria-label="Z-score position on a scale from minus three to plus three" id="z-svg"></svg>
+      <p class="read" id="z-read"></p>
+    </div>
+  </div>
+  <p class="note">0 means in line with the group. Beyond ±1 is unusual. Measured against the sector, Z below −1 raises the Orphan flag and above +1 the Leader flag. In the 12 October scan, NXP printed −1.22 and Airbnb +1.45.</p>
+</section>
+
+<!-- 5 PREMIUM -->
+<section id="premium">
+  <div class="sec-head"><h2>5 The justified-premium test</h2><p>Does faster growth explain a higher multiple?</p></div>
+  <div class="formula">Turns of EBITDA per point of growth = EV/EBITDA ÷ LTM revenue growth (%)</div>
+  <div class="grid">
+    <div class="card"><h3>Company A</h3>
+      <div class="ctl"><div class="row"><label for="a-m">EV/EBITDA (x)</label><output id="o-a-m"></output></div><input type="range" id="a-m" min="5" max="60" step="0.5" value="30"></div>
+      <div class="ctl"><div class="row"><label for="a-g">LTM revenue growth (%)</label><output id="o-a-g"></output></div><input type="range" id="a-g" min="1" max="40" step="0.5" value="14"></div>
+    </div>
+    <div class="card"><h3>Company B</h3>
+      <div class="ctl"><div class="row"><label for="b-m">EV/EBITDA (x)</label><output id="o-b-m"></output></div><input type="range" id="b-m" min="5" max="60" step="0.5" value="18"></div>
+      <div class="ctl"><div class="row"><label for="b-g">LTM revenue growth (%)</label><output id="o-b-g"></output></div><input type="range" id="b-g" min="1" max="40" step="0.5" value="18"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px"><p class="read" id="p-read" style="margin:0"></p><p class="note">Inputs above are illustrative.</p></div>
+  <div class="card"><h3>Reported results, 12 October</h3><div class="tbl"><table>
+    <thead><tr><th>Name</th><th class="n">Turns per point</th><th>Comparison</th></tr></thead>
+    <tbody>
+      <tr><td>ABNB</td><td class="n">2.24</td><td>BKNG 0.91 (2.5x), EXPE 0.63</td></tr>
+      <tr><td>EW</td><td class="n">2.03</td><td>Peer range 1.44 to 2.20</td></tr>
+    </tbody></table></div>
+    <p class="note">A premium that growth explains at a peer's rate shrinks the negative gap. Airbnb pays about 2.5 times Booking's price per point of growth, so its premium stays large after the adjustment.</p></div>
+</section>
+
+<!-- 6 GLOSSARY -->
+<section id="glossary">
+  <div class="sec-head"><h2>6 Glossary</h2><p>Every measure used in the weekly report.</p></div>
+  <input type="search" id="gl-q" placeholder="Search terms" aria-label="Search glossary">
+  <dl class="gl" id="gl-list"></dl>
+</section>
+
+<footer>
+  <p>Flow Value Investing. Research and education only, not investment advice. Figures are carried from the 12 October 2026 weekly scan and FMP LTM data, and are not updated on this page. </p>
+</footer>
+</div>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var MINUS='−';
+function sf(x,d){if(x==null||isNaN(x))return'n/a';d=d==null?1:d;var s=Math.abs(x).toFixed(d);return (x<0?MINUS:(x>0?'+':''))+s}
+function nf(x,d){return isNaN(x)?'n/a':x.toFixed(d)}
+function val(i){var v=parseFloat($(i).value);return isNaN(v)?NaN:v}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+var GATE=22.3;
+
+/* ---------- gap bar ---------- */
+function mkBar(el){
+  var zw=(100-GATE)/2;
+  el.innerHTML='<div class="z" style="left:0;width:'+zw+'%"></div><div class="z" style="right:0;width:'+zw+'%"></div><div class="mid"></div><div class="mk"></div>'+
+   [[0,'-100'],[zw,'-22.3'],[50,'0'],[100-zw,'+22.3'],[100,'+100']].map(function(a){return '<span class="lb" style="left:'+a[0]+'%">'+a[1].replace('-',MINUS)+'</span>'}).join('');
+  var mk=el.querySelector('.mk');
+  return function(v){mk.style.left=((clamp(v,-100,100)+100)/2)+'%'}
+}
+
+/* ---------- 1 gap calculator ---------- */
+var PRE={'o-pe':19.2,'p-pe':48.6,'o-ev':13.3,'p-ev':26.9,'o-fcf':19.3,'p-fcf':40.0};
+var setBar=mkBar($('g-bar'));
+function median(a){a=a.slice().sort(function(x,y){return x-y});var n=a.length;return n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2}
+function calcGap(){
+  var legs=['pe','ev','fcf'],g=[],valid=[];
+  legs.forEach(function(k){
+    var o=val('o-'+k),p=val('p-'+k),v=(o>0&&p>0)?100*Math.log(p/o):NaN;
+    $('g-'+k).textContent=isNaN(v)?'n/a':sf(v);
+    if(!isNaN(v))valid.push(v);
+  });
+  var med=$('g-med'),gate=$('g-gate'),sp=$('g-spread'),rd=$('g-read');
+  if(valid.length<2){med.textContent='n/a';gate.textContent='needs 2 legs';gate.className='tag off';sp.textContent='n/a';sp.className='tag off';rd.textContent='At least two multiples are needed.';return}
+  var m=median(valid),spread=Math.max.apply(null,valid)-Math.min.apply(null,valid);
+  med.textContent=sf(m);setBar(m);
+  var pass=Math.abs(m)>GATE;
+  gate.textContent=pass?'Passed':'Inside gate';gate.className='tag'+(pass?'':' off');
+  sp.textContent=nf(spread,1)+(spread>80?' too wide':' ok');sp.className='tag'+(spread>80?'':' off');
+  var pct=Math.abs(Math.exp(m/100)-1)*100,pc2=(1-Math.exp(m/100))*100;
+  rd.textContent=m>=0?'The peer median multiple is about '+nf(pct,0)+'% above the stock’s own multiple. The stock is cheaper than its peers.'
+                      :'The peer median multiple is about '+nf(Math.abs(pc2),0)+'% below the stock’s own multiple. The stock is dearer than its peers.';
+  if(valid.length===2)rd.textContent+=' Only two legs are usable, so the median is their average.';
+  var d=val('disp');
+  $('disp-read').textContent=isNaN(d)?'':(d>0.6?'Dispersion above 0.6: the peer group is incoherent and the gap is weak evidence.':'Dispersion at or below 0.6: the peer group is coherent enough to use.');
+}
+Object.keys(PRE).forEach(function(k){$(k).value=PRE[k];$(k).addEventListener('input',calcGap)});
+$('disp').addEventListener('input',calcGap);
+$('g-reset').addEventListener('click',function(){Object.keys(PRE).forEach(function(k){$(k).value=PRE[k]});$('disp').value='';calcGap()});
+calcGap();
+
+/* ---------- 2 score builder ---------- */
+var NAMES=[
+ {t:'NXPI',gap:80.3,reb:72.7,mgn:4.8,rev:13.1,mom:0.2,scan:1.5,rev2:1.5,stress:'Auto-heavy EBITDA leg only: +42.1',why:''},
+ {t:'ABNB',gap:-75.7,reb:-79.1,mgn:-0.4,rev:14.9,mom:-3.6,scan:-1.0,rev2:-1.0,stress:'Against BKNG only: −75.0',why:''},
+ {t:'PEP',gap:57.8,reb:44.6,mgn:1.8,rev:6.1,mom:-7.3,scan:1.0,rev2:0.5,stress:'Food peers only +13.1, beverage peers only +57.7',why:'Revised to 0.5 after a guidance cut. The food-peer gap of +13.1 sits inside the gate.'},
+ {t:'BSX',gap:26.2,reb:30.9,mgn:5.4,rev:11.1,mom:-5.0,scan:1.0,rev2:1.0,stress:'After a 10% EBITDA cut, EBITDA leg +20.4, below the gate',why:''},
+ {t:'EW',gap:-53.5,reb:-53.6,mgn:1.8,rev:14.2,mom:-0.6,scan:-0.5,rev2:0,stress:'Growth-adjusted −25.7, and −10.5 excluding BSX',why:'Revised to 0 because the growth-adjusted premium is only −10 to −26.'}
+];
+var cur=null;
+function band(x,hi,lo){return x>hi?1:(x<lo?-1:0)}
+function calcScore(){
+  var g=val('s-gap'),m=val('s-mgn'),r=val('s-rev'),mo=val('s-mom');
+  $('o-s-gap').textContent=sf(g);$('o-s-mgn').textContent=sf(m)+'pp';$('o-s-rev').textContent=nf(r,1)+'%';$('o-s-mom').textContent=sf(mo)+'%';
+  var base=Math.abs(g)>GATE?(g>0?1:-1):0;
+  var mb=band(m,1,-1),rb=r>10?1:(r<0?-1:0),mean=(mb+rb)/2,op=0.5*Math.sign(mean);
+  var mom=Math.abs(mo)<=3?0:0.5*Math.sign(mo);
+  var tot=base+op+mom;
+  var L=[
+   ['Base','|VGap| '+(Math.abs(g)>GATE?'above':'inside')+' the gate',base],
+   ['Margin band',sf(m)+'pp',mb],
+   ['Revenue band',nf(r,1)+'% growth',rb],
+   ['Operating modifier','sign of mean ('+sf(mean,1)+') × 0.5',op],
+   ['Momentum modifier','1M move '+(Math.abs(mo)<=3?'inside':'beyond')+' ±3%',mom]
+  ];
+  var h=L.map(function(a,i){var sub=(i===1||i===2);return '<tr><td'+(sub?' style="padding-left:20px;color:var(--muted)"':'')+'>'+a[0]+'<div class="note" style="margin:0">'+a[1]+'</div></td><td class="n">'+sf(a[2],1)+'</td></tr>'}).join('');
+  h+='<tr class="tot"><td>VG_Score</td><td class="n">'+sf(tot,1)+'</td></tr>';
+  $('s-lines').innerHTML=h;
+  var sc='';for(var k=-4;k<=4;k++){var v=k/2;sc+='<div class="'+(v===tot?'on':(v<0?'neg':(v>0?'pos':'')))+'">'+(v>0?'+':(v<0?MINUS:''))+Math.abs(v).toFixed(1)+'</div>'}
+  $('s-scale').innerHTML=sc;
+  var a=Math.abs(tot),dir=tot>0?'long':'short',rd;
+  if(a===0)rd='0: no gap.';else if(a===2)rd=sf(tot,1)+': ready. Candidate '+dir+'.';else if(a>=1)rd=sf(tot,1)+': mixed signals. Candidate '+dir+' that needs checking.';else rd=sf(tot,1)+': not there yet.';
+  $('s-read').textContent=rd;
+  var n=cur&&NAMES.filter(function(x){return x.t===cur})[0];
+  $('s-note').textContent=n?(n.t+' after review: '+sf(n.rev2,1)+'. '+(n.why||'No override applied.')):'';
+}
+['s-gap','s-mgn','s-rev','s-mom'].forEach(function(i){$(i).addEventListener('input',function(){cur=null;calcScore()})});
+function load(t){var n=NAMES.filter(function(x){return x.t===t})[0];$('s-gap').value=n.gap;$('s-mgn').value=n.mgn;$('s-rev').value=n.rev;$('s-mom').value=n.mom;cur=t;calcScore();
+  Array.prototype.forEach.call(document.querySelectorAll('#presets button'),function(b){b.classList.toggle('on',b.textContent===t)})}
+$('presets').innerHTML=NAMES.map(function(n){return '<button type="button">'+n.t+'</button>'}).join('');
+Array.prototype.forEach.call(document.querySelectorAll('#presets button'),function(b){b.addEventListener('click',function(){load(b.textContent)})});
+$('names-body').innerHTML=NAMES.map(function(n){return '<tr><td class="mono"><b>'+n.t+'</b></td><td class="n">'+sf(n.gap)+'</td><td class="n">'+sf(n.reb)+'</td><td class="n">'+sf(n.scan,1)+'</td><td class="n">'+sf(n.rev2,1)+'</td><td>'+n.stress+'</td><td><button type="button" data-t="'+n.t+'">Open in builder</button></td></tr>'}).join('');
+Array.prototype.forEach.call(document.querySelectorAll('#names-body button'),function(b){b.addEventListener('click',function(){load(b.getAttribute('data-t'));$('score').scrollIntoView({behavior:'smooth'})})});
+load('NXPI');
+
+/* ---------- 4 Z ---------- */
+function calcZ(){
+  var s=val('z-s'),g=val('z-g'),d=val('z-d');
+  $('o-z-s').textContent=sf(s)+'%';$('o-z-g').textContent=sf(g)+'%';$('o-z-d').textContent=nf(d,1)+'pp';
+  var z=(s-g)/d;$('z-val').textContent=sf(z,2);
+  var W=320,x=function(v){return 10+(clamp(v,-3,3)+3)/6*(W-20)};
+  var svg='<rect x="'+x(-3)+'" y="14" width="'+(x(-1)-x(-3))+'" height="26" fill="var(--gold-soft)"/><rect x="'+x(1)+'" y="14" width="'+(x(3)-x(1))+'" height="26" fill="var(--gold-soft)"/><rect x="'+x(-3)+'" y="14" width="'+(x(3)-x(-3))+'" height="26" fill="none" stroke="var(--line)"/>';
+  [-3,-2,-1,0,1,2,3].forEach(function(t){svg+='<line x1="'+x(t)+'" x2="'+x(t)+'" y1="40" y2="45" stroke="var(--muted)"/><text x="'+x(t)+'" y="58" text-anchor="middle">'+(t<0?MINUS:(t>0?'+':''))+Math.abs(t)+'</text>'});
+  svg+='<rect x="'+(x(z)-2)+'" y="8" width="4" height="38" fill="var(--fg)"/>';
+  $('z-svg').innerHTML=svg;
+  var r;
+  if(z<-1)r='More than one standard deviation below the group. Unusual weakness. Against a sector this is the Orphan flag.';
+  else if(z>1)r='More than one standard deviation above the group. Unusual strength. Against a sector this is the Leader flag.';
+  else r='Within one standard deviation of the group. In line.';
+  $('z-read').textContent=r;
+}
+['z-s','z-g','z-d'].forEach(function(i){$(i).addEventListener('input',calcZ)});calcZ();
+
+/* ---------- 5 premium ---------- */
+function calcPrem(){
+  var am=val('a-m'),ag=val('a-g'),bm=val('b-m'),bg=val('b-g');
+  $('o-a-m').textContent=nf(am,1)+'x';$('o-a-g').textContent=nf(ag,1)+'%';$('o-b-m').textContent=nf(bm,1)+'x';$('o-b-g').textContent=nf(bg,1)+'%';
+  var a=am/ag,b=bm/bg,hi=a>=b;
+  $('p-read').innerHTML='Company A pays <b class="mono">'+nf(a,2)+'</b> turns of EBITDA per point of growth. Company B pays <b class="mono">'+nf(b,2)+'</b>. '+
+    (hi?'A':'B')+' pays <b class="mono">'+nf(Math.max(a,b)/Math.min(a,b),2)+'x</b> as much per point of growth, so '+(hi?'A':'B')+' has the harder premium to justify.';
+}
+['a-m','a-g','b-m','b-g'].forEach(function(i){$(i).addEventListener('input',calcPrem)});calcPrem();
+
+/* ---------- 7 glossary ---------- */
+var GL=[
+['VGap','Valuation','100 × ln(peer median multiple ÷ own multiple), taken as the median of the P/E, EV/EBITDA and P/FCF gaps. Positive means cheaper than peers.'],
+['Gate','Valuation','The ±22.3 threshold, equal to about a 20% discount or premium. Inside it the base signal is 0.'],
+['Spread','Valuation','The largest leg gap minus the smallest. Above 80 the multiples disagree about the company.'],
+['Peer dispersion','Valuation','The coefficient of variation of the peer multiples. Above 0.6 the group is incoherent and a discount to it is weak evidence.'],
+['Peer median','Valuation','The middle multiple of the stock’s peer group, used as the yardstick for the gap.'],
+['P/E','Valuation','Share price divided by trailing earnings per share.'],
+['EV/EBITDA','Valuation','Enterprise value (market value of equity plus net debt) divided by earnings before interest, tax, depreciation and amortisation.'],
+['EV/EBIT','Valuation','Enterprise value divided by earnings before interest and tax. Shown for reference and left out of the VGap median. Derived as EV/EBITDA × EBITDA margin ÷ EBIT margin.'],
+['P/FCF','Valuation','Market value divided by free cash flow, the cash left after operating costs and capital spending.'],
+['VG_Score','Score','The score from −2 to +2 in half steps: base plus operating modifier plus momentum modifier.'],
+['Base','Score','+1 when VGap is above the gate, −1 when below the negative gate, otherwise 0.'],
+['Mod_Operating','Score','0.5 times the sign of the mean of the margin band and the revenue band. Both inputs are blended 60% last twelve months and 40% latest quarter.'],
+['Mod_Momentum','Score','0 when the 1-month return is within ±3%, otherwise ±0.5 with the sign of the move.'],
+['Margin band','Score','+1 when the EBITDA margin change is above +1pp, −1 when below −1pp, 0 between.'],
+['Revenue band','Score','+1 above 10% growth, 0 from 0% to 10%, −1 below 0%.'],
+['1M return','Momentum','The share price change over the last month.'],
+['Z-score','Momentum','(stock 3M return − group typical 3M return) ÷ group standard deviation. 0 is in line, beyond ±1 is unusual.'],
+['Orphan','Momentum','A stock whose sector-relative Z-score is below −1.'],
+['Leader','Momentum','A stock whose sector-relative Z-score is above +1.'],
+['Standard deviation','Momentum','How widely the group’s returns scatter around their typical value.'],
+['Justified premium','Valuation','EV/EBITDA per point of LTM revenue growth, in turns of EBITDA per point. It tests whether growth explains a premium multiple.'],
+['LTM','Operating','Last twelve months.'],
+['Call spread','Options','Buy a call at one strike and sell a call at a higher strike. Profits when the stock rises.'],
+['Put spread','Options','Buy a put at one strike and sell a put at a lower strike. Profits when the stock falls.'],
+['Debit','Options','The net price paid to open the spread. It is also the maximum loss.'],
+['Max gain','Options','Strike width minus the debit.'],
+['Breakeven','Options','For a call spread, the long strike plus the debit. For a put spread, the long strike minus the debit.'],
+['Reward to risk','Options','Max gain divided by max loss.'],
+['Mid','Options','The average of bid and ask. A spread priced at mid uses the mid of each leg.'],
+['Natural','Options','The price that fills immediately: pay the ask on the long leg and receive the bid on the short leg.'],
+['Combo order','Options','A single order that trades both legs together at one net price.'],
+['Open interest','Options','The number of contracts outstanding. It shows how easily a position can be traded. The levels used are 500 per leg to trade and 250 as the screen minimum.'],
+['Bid-ask width','Options','Natural debit minus the best-bid debit, shown as a percentage of the mid. The bar is 10% to 20% of premium.'],
+['DTE','Options','Days to expiry. 80 to 90 days works as a liquidity test, and up to 180 days is acceptable when catalysts and thesis need the time.'],
+['Implied volatility','Options','The volatility the option price implies for the stock.'],
+['Historical volatility','Options','The volatility the stock actually showed over a past window. Implied above historical means options are priced dear.']
+];
+function renderGl(q){
+  q=(q||'').toLowerCase();
+  var h=GL.filter(function(g){return !q||(g[0]+' '+g[1]+' '+g[2]).toLowerCase().indexOf(q)>-1}).map(function(g){return '<dt>'+g[0]+'<span>'+g[1]+'</span></dt><dd>'+g[2]+'</dd>'}).join('');
+  $('gl-list').innerHTML=h||'<dd>No match.</dd>';
+}
+$('gl-q').addEventListener('input',function(){renderGl(this.value)});renderGl('');
+})();
+</script>
+
+</html>
