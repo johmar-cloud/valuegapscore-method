@@ -125,14 +125,14 @@ footer{margin-top:48px;padding-top:14px;border-top:.5px solid var(--line);font-s
     <p class="note">Preset values are rounded FMP LTM multiples from 12 October. The report's rebuilt NXP gap is +72.7, and rounding here gives about +73.</p>
   </div>
   <div class="grid" style="margin-top:12px">
-    <div class="card"><h3>The gate</h3><p>±22.3 is a 20% discount or premium, since 100 × ln(1.25) = 22.3. Inside the gate there is no base signal. Reading the scale: +30 means the peer median is about 35% above own. −30 means it is about 26% below. +69.3 means the stock trades at half the peer median.</p></div>
+    <div class="card"><h3>The gate</h3><p>+22.3 means the stock trades 20% below the peer median, since 100 × ln(1.25) = 22.3. −22.3 means it trades 25% above it. A 20% premium would be −18.2, so the gate is symmetric in log terms. Inside the gate the whole score is 0. Reading the scale: +30 means the peer median is about 35% above own. −30 means it is about 26% below. +69.3 means the stock trades at half the peer median.</p></div>
     <div class="card"><h3>Integrity filters</h3><p><b>Spread</b> is the largest leg gap minus the smallest. Above 80 the multiples disagree about the company. <b>Peer dispersion</b> above 0.6 means the peer group is incoherent, so a discount to it is weak evidence. With only two usable legs, the median is their average and one broken leg poisons it.</p></div>
   </div>
 </section>
 
 <!-- 2 SCORE -->
 <section id="score">
-  <div class="sec-head"><h2>2 The VG_Score builder</h2><p>Base signal plus an operating modifier plus a momentum modifier. Range −2 to +2 in half steps.</p></div>
+  <div class="sec-head"><h2>2 The VG_Score builder</h2><p>Base signal plus an operating modifier plus a momentum modifier. Range −2 to +2 in half steps. Inside the gate the score is 0 and the modifiers are not applied.</p></div>
   <div class="btns" id="presets"></div>
   <div class="grid">
     <div class="card">
@@ -151,7 +151,7 @@ footer{margin-top:48px;padding-top:14px;border-top:.5px solid var(--line);font-s
     </div>
   </div>
   <div class="grid" style="margin-top:12px">
-    <div class="card"><h3>Base</h3><p>+1 when VGap is above +22.3, −1 when below −22.3, otherwise 0.</p></div>
+    <div class="card"><h3>Base</h3><p>+1 when VGap is above +22.3, −1 when below −22.3. Inside the gate the base is 0 and the whole score is 0.</p></div>
     <div class="card"><h3>Operating modifier</h3><p>Margin band: +1 above +1pp, −1 below −1pp, 0 between. Revenue band: +1 above 10% growth, 0 from 0% to 10%, −1 below 0%. The sign of the mean of the two bands, times 0.5.</p></div>
     <div class="card"><h3>Momentum modifier</h3><p>0 when the 1-month return is within ±3%. Otherwise ±0.5 with the sign of the move.</p></div>
   </div>
@@ -165,7 +165,7 @@ footer{margin-top:48px;padding-top:14px;border-top:.5px solid var(--line);font-s
     <thead><tr><th>Name</th><th class="n">Scan gap</th><th class="n">Rebuilt</th><th class="n">Scan score</th><th class="n">Revised</th><th>Stress case</th><th></th></tr></thead>
     <tbody id="names-body"></tbody>
   </table></div>
-  <p class="note">The builder reproduces the scan score. Revised scores include judgement: PEP drops from 1.0 to 0.5 after a guidance cut and a food-peer gap of +13.1 that sits inside the gate. EW moves from −0.5 to 0 because its growth-adjusted premium is only −10 to −26.</p></div>
+  <p class="note">The builder reproduces the scan score. Revised scores include judgement: PEP drops from 1.0 to 0.5 after a guidance cut and a food-peer gap of +13.1 that sits inside the gate. EW moves from −0.5 to 0 because its growth-adjusted premium is −25.7 against all five peers, just beyond the gate, and −10.5 excluding BSX, so the short depends on peer choice.</p></div>
 </section>
 
 <!-- 4 Z -->
@@ -278,7 +278,7 @@ var NAMES=[
  {t:'ABNB',gap:-75.7,reb:-79.1,mgn:-0.4,rev:14.9,mom:-3.6,scan:-1.0,rev2:-1.0,stress:'Against BKNG only: −75.0',why:''},
  {t:'PEP',gap:57.8,reb:44.6,mgn:1.8,rev:6.1,mom:-7.3,scan:1.0,rev2:0.5,stress:'Food peers only +13.1, beverage peers only +57.7',why:'Revised to 0.5 after a guidance cut. The food-peer gap of +13.1 sits inside the gate.'},
  {t:'BSX',gap:26.2,reb:30.9,mgn:5.4,rev:11.1,mom:-5.0,scan:1.0,rev2:1.0,stress:'After a 10% EBITDA cut, EBITDA leg +20.4, below the gate',why:''},
- {t:'EW',gap:-53.5,reb:-53.6,mgn:1.8,rev:14.2,mom:-0.6,scan:-0.5,rev2:0,stress:'Growth-adjusted −25.7, and −10.5 excluding BSX',why:'Revised to 0 because the growth-adjusted premium is only −10 to −26.'}
+ {t:'EW',gap:-53.5,reb:-53.6,mgn:1.8,rev:14.2,mom:-0.6,scan:-0.5,rev2:0,stress:'Growth-adjusted −25.7, and −10.5 excluding BSX',why:'Revised to 0. The growth-adjusted premium is −25.7 against five peers and −10.5 excluding BSX, so the short depends on peer choice.'}
 ];
 var cur=null;
 function band(x,hi,lo){return x>hi?1:(x<lo?-1:0)}
@@ -288,13 +288,14 @@ function calcScore(){
   var base=Math.abs(g)>GATE?(g>0?1:-1):0;
   var mb=band(m,1,-1),rb=r>10?1:(r<0?-1:0),mean=(mb+rb)/2,op=0.5*Math.sign(mean);
   var mom=Math.abs(mo)<=3?0:0.5*Math.sign(mo);
+  var on=base!==0; if(!on){op=0;mom=0}
   var tot=base+op+mom;
   var L=[
    ['Base','|VGap| '+(Math.abs(g)>GATE?'above':'inside')+' the gate',base],
    ['Margin band',sf(m)+'pp',mb],
    ['Revenue band',nf(r,1)+'% growth',rb],
-   ['Operating modifier','sign of mean ('+sf(mean,1)+') × 0.5',op],
-   ['Momentum modifier','1M move '+(Math.abs(mo)<=3?'inside':'beyond')+' ±3%',mom]
+   ['Operating modifier',on?'sign of mean ('+sf(mean,1)+') × 0.5':'not applied inside the gate',op],
+   ['Momentum modifier',on?'1M move '+(Math.abs(mo)<=3?'inside':'beyond')+' ±3%':'not applied inside the gate',mom]
   ];
   var h=L.map(function(a,i){var sub=(i===1||i===2);return '<tr><td'+(sub?' style="padding-left:20px;color:var(--muted)"':'')+'>'+a[0]+'<div class="note" style="margin:0">'+a[1]+'</div></td><td class="n">'+sf(a[2],1)+'</td></tr>'}).join('');
   h+='<tr class="tot"><td>VG_Score</td><td class="n">'+sf(tot,1)+'</td></tr>';
@@ -347,7 +348,7 @@ function calcPrem(){
 /* ---------- 7 glossary ---------- */
 var GL=[
 ['VGap','Valuation','100 × ln(peer median multiple ÷ own multiple), taken as the median of the P/E, EV/EBITDA and P/FCF gaps. Positive means cheaper than peers.'],
-['Gate','Valuation','The ±22.3 threshold, equal to about a 20% discount or premium. Inside it the base signal is 0.'],
+['Gate','Valuation','The ±22.3 threshold. +22.3 means the stock trades 20% below the peer median, −22.3 means 25% above it. Inside it the whole score is 0.'],
 ['Spread','Valuation','The largest leg gap minus the smallest. Above 80 the multiples disagree about the company.'],
 ['Peer dispersion','Valuation','The coefficient of variation of the peer multiples. Above 0.6 the group is incoherent and a discount to it is weak evidence.'],
 ['Peer median','Valuation','The middle multiple of the stock’s peer group, used as the yardstick for the gap.'],
@@ -355,8 +356,8 @@ var GL=[
 ['EV/EBITDA','Valuation','Enterprise value (market value of equity plus net debt) divided by earnings before interest, tax, depreciation and amortisation.'],
 ['EV/EBIT','Valuation','Enterprise value divided by earnings before interest and tax. Shown for reference and left out of the VGap median. Derived as EV/EBITDA × EBITDA margin ÷ EBIT margin.'],
 ['P/FCF','Valuation','Market value divided by free cash flow, the cash left after operating costs and capital spending.'],
-['VG_Score','Score','The score from −2 to +2 in half steps: base plus operating modifier plus momentum modifier.'],
-['Base','Score','+1 when VGap is above the gate, −1 when below the negative gate, otherwise 0.'],
+['VG_Score','Score','The score from −2 to +2 in half steps: base plus operating modifier plus momentum modifier. It is 0 when the gap is inside the gate.'],
+['Base','Score','+1 when VGap is above the gate, −1 when below the negative gate. Inside the gate the whole score is 0.'],
 ['Mod_Operating','Score','0.5 times the sign of the mean of the margin band and the revenue band. Both inputs are blended 60% last twelve months and 40% latest quarter.'],
 ['Mod_Momentum','Score','0 when the 1-month return is within ±3%, otherwise ±0.5 with the sign of the move.'],
 ['Margin band','Score','+1 when the EBITDA margin change is above +1pp, −1 when below −1pp, 0 between.'],
